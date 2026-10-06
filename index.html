@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Hala ✨ - A Little Vibe Check</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Quicksand for a soft, friendly look -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            /* Calm, aesthetic gradient instead of overt pink/red */
+            background: linear-gradient(135deg, #fdfbfb 0%, #e2e8f0 50%, #c7d2fe 100%);
+            overflow: hidden; /* Prevent scrolling during Typeform-like transitions */
+        }
+        
+        /* Floating particles animation - toned down */
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            20% { opacity: 0.3; }
+            80% { opacity: 0.3; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+        .floating-heart {
+            position: absolute;
+            animation: floatUp 10s linear infinite; /* Slower, more subtle */
+            pointer-events: none;
+            z-index: 0;
+            color: rgba(99, 102, 241, 0.2); /* Soft indigo instead of hot pink */
+        }
+
+        /* Typeform smooth transitions */
+        .question-container {
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .question-exit {
+            opacity: 0;
+            transform: translateY(-40px);
+            pointer-events: none;
+        }
+        .question-enter {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        /* Custom inputs */
+        .custom-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #6366f1; /* Indigo instead of rose */
+            border-radius: 0;
+            box-shadow: none !important;
+            padding: 10px 0;
+            font-size: 1.25rem;
+            color: #1e1b4b;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+        .custom-input:focus {
+            outline: none;
+            border-color: #4338ca;
+        }
+        .custom-textarea {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            padding: 1rem;
+            font-size: 1.125rem;
+            color: #1e1b4b;
+            width: 100%;
+            transition: all 0.3s;
+            resize: none;
+        }
+        .custom-textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #6366f1;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Options styling */
+        .option-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover, .option-btn.selected {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #6366f1;
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+        }
+        .option-letter {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+        .option-btn:hover .option-letter, .option-btn.selected .option-letter {
+            background: #4f46e5;
+            color: white;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col relative">
+
+    <!-- Background Particles Container -->
+    <div id="particles-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Header / Progress Bar -->
+    <header class="relative z-20 p-6 flex items-center justify-between">
+        <div class="text-indigo-600 font-bold text-xl flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-5 h-5"></i> For Hala
+        </div>
+        <div class="w-1/3 max-w-xs bg-white/50 h-2 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-400 to-purple-500 w-0 transition-all duration-500 ease-out"></div>
+        </div>
+    </header>
+
+    <!-- Main Interactive Area -->
+    <main class="flex-grow flex items-center justify-center relative z-10 px-4 py-8">
+        <div id="app-container" class="w-full max-w-3xl relative h-[60vh] flex items-center justify-center">
+            
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="question-container text-center w-full absolute inset-0 flex flex-col items-center justify-center">
+                <div class="w-20 h-20 bg-white/80 rounded-full flex items-center justify-center shadow-xl mb-8 animate-bounce mx-auto">
+                    <i data-lucide="coffee" class="w-10 h-10 text-indigo-500"></i>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4 tracking-tight">Hala's Vibe Check ✨</h1>
+                <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-lg mx-auto">
+                    Just a few quick questions to see how well you read me and what you think about our dynamic. Be honest!
+                </p>
+                <button onclick="startSurvey()" class="group relative inline-flex items-center gap-3 px-10 py-4 bg-slate-900 text-white font-semibold text-lg rounded-full shadow-2xl hover:bg-slate-800 hover:scale-105 transition-all duration-300">
+                    <span>Let's Begin</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+
+            <!-- Dynamic Question Container -->
+            <div id="question-wrapper" class="hidden w-full absolute inset-0 flex flex-col justify-center">
+                <!-- Content injected via JS -->
+            </div>
+
+            <!-- Success Screen -->
+            <div id="success-screen" class="hidden question-container text-center w-full absolute inset-0 flex flex-col items-center justify-center">
+                <div class="w-24 h-24 bg-indigo-500 rounded-full flex items-center justify-center shadow-2xl mb-8 mx-auto transform scale-0" id="success-icon">
+                    <i data-lucide="check" class="w-12 h-12 text-white"></i>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4">Answers locked in!</h2>
+                <p class="text-2xl text-indigo-600 font-medium">Thank you Hala ✨</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer / Navigation Controls -->
+    <footer id="nav-footer" class="relative z-20 p-6 flex justify-between items-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <button onclick="prevStep()" id="prev-btn" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors font-medium invisible">
+            <i data-lucide="chevron-up" class="w-5 h-5"></i> Previous
+        </button>
+        <button onclick="nextStep()" id="next-btn" class="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all font-semibold opacity-50 cursor-not-allowed">
+            <span id="next-text">Next</span>
+            <i data-lucide="chevron-down" class="w-5 h-5"></i>
+        </button>
+    </footer>
+
+    <script>
+        const surveyQuestions = [
+            {
+                id: 'q1',
+                type: 'textarea',
+                question: "1. If we got arrested together, what dumb thing did we probably do?",
+                placeholder: "The police report would say...",
+                required: true
+            },
+            {
+                id: 'q2',
+                type: 'choice',
+                question: "2. Be honest, what kind of animal energy do I give off?",
+                options: [
+                    "Chaotic Raccoon searching for snacks 🦝",
+                    "Clueless Golden Retriever 🐕",
+                    "Sleepy Sloth who just wants a nap 🦥",
+                    "Grumpy Cat silently judging everyone 😾"
+                ],
+                required: true
+            },
+            {
+                id: 'q3',
+                type: 'choice',
+                question: "3. A zombie apocalypse breaks out. What is my role in our survival group?",
+                options: [
+                    "The fearless leader with a sword 🗡️",
+                    "The guy who dies in the first 5 minutes 💀",
+                    "The one hiding and hoarding all the snacks 🍟",
+                    "The one who tries to 'reason' with the zombies 🧟"
+                ],
+                required: true
+            },
+            {
+                id: 'q4',
+                type: 'textarea',
+                question: "4. What is a completely unhinged conspiracy theory you think I would absolutely believe?",
+                placeholder: "e.g. Birds aren't real...",
+                required: true
+            },
+            {
+                id: 'q5',
+                type: 'choice',
+                question: "5. If I suddenly go completely offline for 3 hours, what are you assuming I'm actually doing?",
+                options: [
+                    "Raging at a competitive video game 🎮",
+                    "Falling down a weird 3AM YouTube rabbit hole 🕳️",
+                    "Staring at a wall overthinking something minor 🤔",
+                    "Taking an aggressive, unplanned nap 😴"
+                ],
+                required: true
+            },
+            {
+                id: 'q6',
+                type: 'choice',
+                question: "6. Most importantly... who would win in a fight?",
+                options: [
+                    "100 duck-sized horses 🦆",
+                    "1 horse-sized duck 🐎",
+                    "Me (I would simply intervene) 🦸‍♂️",
+                    "Neither, they would team up and destroy us 🌍"
+                ],
+                required: true
+            }
+        ];
+
+        let currentStep = -1; // -1 is welcome screen
+        let answers = {};
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            createFloatingParticles();
+            
+            // Allow pressing Enter to go to next step
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && currentStep >= 0 && currentStep < surveyQuestions.length) {
+                    if (surveyQuestions[currentStep].type !== 'textarea') {
+                        e.preventDefault();
+                        const nextBtn = document.getElementById('next-btn');
+                        if (!nextBtn.classList.contains('opacity-50')) {
+                            nextStep();
+                        }
+                    }
+                }
+            });
+        });
+
+        function createFloatingParticles() {
+            const container = document.getElementById('particles-container');
+            // Changed from hearts to more neutral/casual aesthetic shapes
+            const icons = ['✨', '☁️', '☕', '🌟'];
+            
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'floating-heart text-xl md:text-2xl';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDuration = (Math.random() * 6 + 8) + 's'; // Slower animation
+                particle.innerHTML = icons[Math.floor(Math.random() * icons.length)];
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 15000);
+            }, 800);
+        }
+
+        function startSurvey() {
+            const welcome = document.getElementById('welcome-screen');
+            welcome.classList.add('question-exit');
+            
+            setTimeout(() => {
+                welcome.classList.add('hidden');
+                document.getElementById('question-wrapper').classList.remove('hidden');
+                document.getElementById('nav-footer').classList.remove('opacity-0', 'pointer-events-none');
+                currentStep = 0;
+                renderQuestion();
+            }, 500);
+        }
+
+        function updateProgress() {
+            const progress = document.getElementById('progress-bar');
+            if (currentStep >= 0) {
+                const percentage = (currentStep / surveyQuestions.length) * 100;
+                progress.style.width = `${percentage}%`;
+            } else {
+                progress.style.width = '0%';
+            }
+        }
+
+        function renderQuestion() {
+            updateProgress();
+            const wrapper = document.getElementById('question-wrapper');
+            const q = surveyQuestions[currentStep];
+            
+            // Prepare new question HTML
+            const newQ = document.createElement('div');
+            newQ.className = 'question-container question-enter w-full max-w-2xl mx-auto';
+            newQ.id = `q-block-${currentStep}`;
+            
+            let inputHTML = '';
+            
+            if (q.type === 'textarea') {
+                inputHTML = `<textarea id="input-${currentStep}" class="custom-textarea h-32 md:h-40" placeholder="${q.placeholder}" oninput="validateInput()">${answers[q.id] || ''}</textarea>`;
+            } 
+            else if (q.type === 'text') {
+                inputHTML = `<input type="text" id="input-${currentStep}" class="custom-input" placeholder="${q.placeholder}" value="${answers[q.id] || ''}" oninput="validateInput()">`;
+            } 
+            else if (q.type === 'choice') {
+                inputHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">`;
+                q.options.forEach((opt, idx) => {
+                    const isSelected = answers[q.id] === opt;
+                    const letter = String.fromCharCode(65 + idx);
+                    inputHTML += `
+                        <button onclick="selectOption('${opt}', this)" class="option-btn flex items-center gap-4 p-4 rounded-2xl text-left w-full ${isSelected ? 'selected' : ''}">
+                            <span class="option-letter w-8 h-8 rounded-md flex items-center justify-center font-bold text-sm transition-colors shadow-sm">${letter}</span>
+                            <span class="text-slate-700 font-medium">${opt}</span>
+                        </button>
+                    `;
+                });
+                inputHTML += `</div>`;
+            }
+
+            newQ.innerHTML = `
+                <h2 class="text-2xl md:text-4xl font-bold text-slate-800 mb-8 leading-tight">${q.question}</h2>
+                ${inputHTML}
+            `;
+
+            // Transition logic
+            const currentBlocks = wrapper.querySelectorAll('.question-container');
+            if (currentBlocks.length > 0) {
+                const oldBlock = currentBlocks[0];
+                oldBlock.classList.remove('question-enter');
+                oldBlock.classList.add('question-exit');
+                setTimeout(() => {
+                    oldBlock.remove();
+                    wrapper.appendChild(newQ);
+                    requestAnimationFrame(() => {
+                        newQ.classList.remove('question-enter');
+                        // Focus input if text/textarea
+                        const input = document.getElementById(`input-${currentStep}`);
+                        if (input) input.focus();
+                    });
+                }, 300); // Wait for exit animation
+            } else {
+                wrapper.appendChild(newQ);
+                requestAnimationFrame(() => {
+                    newQ.classList.remove('question-enter');
+                    const input = document.getElementById(`input-${currentStep}`);
+                    if (input) input.focus();
+                });
+            }
+
+            updateNavButtons();
+            validateInput(); // Initial validation check
+        }
+
+        function selectOption(value, btnElement) {
+            const q = surveyQuestions[currentStep];
+            answers[q.id] = value;
+            
+            // Visual update
+            const parent = btnElement.parentElement;
+            parent.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+            btnElement.classList.add('selected');
+            
+            validateInput();
+            
+            // Auto-advance for choice questions after a tiny delay for Typeform feel
+            setTimeout(() => {
+                nextStep();
+            }, 400);
+        }
+
+        function validateInput() {
+            const q = surveyQuestions[currentStep];
+            const nextBtn = document.getElementById('next-btn');
+            let isValid = false;
+
+            if (q.type === 'text' || q.type === 'textarea') {
+                const val = document.getElementById(`input-${currentStep}`).value.trim();
+                answers[q.id] = val;
+                isValid = !q.required || val.length > 0;
+            } else if (q.type === 'choice') {
+                isValid = !!answers[q.id];
+            }
+
+            if (isValid) {
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.add('animate-pulse');
+                setTimeout(() => nextBtn.classList.remove('animate-pulse'), 1000);
+            } else {
+                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextText = document.getElementById('next-text');
+            
+            if (currentStep > 0) {
+                prevBtn.classList.remove('invisible');
+            } else {
+                prevBtn.classList.add('invisible');
+            }
+
+            if (currentStep === surveyQuestions.length - 1) {
+                nextText.innerText = 'Submit';
+            } else {
+                nextText.innerText = 'Next';
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderQuestion();
+            }
+        }
+
+        function nextStep() {
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn.classList.contains('opacity-50')) return; // Prevent if invalid
+
+            if (currentStep < surveyQuestions.length - 1) {
+                currentStep++;
+                renderQuestion();
+            } else {
+                submitSurvey();
+            }
+        }
+
+        function submitSurvey() {
+            // Hide navigation
+            document.getElementById('nav-footer').classList.add('opacity-0', 'pointer-events-none');
+            const wrapper = document.getElementById('question-wrapper');
+            
+            // Fade out current question
+            const currentBlock = wrapper.querySelector('.question-container');
+            if (currentBlock) currentBlock.classList.add('question-exit');
+
+            setTimeout(() => {
+                wrapper.classList.add('hidden');
+                
+                // Show success screen
+                const success = document.getElementById('success-screen');
+                success.classList.remove('hidden');
+                
+                // Progress bar full
+                document.getElementById('progress-bar').style.width = '100%';
+
+                // Animate checkmark in
+                setTimeout(() => {
+                    document.getElementById('success-icon').classList.remove('scale-0');
+                    document.getElementById('success-icon').classList.add('scale-100', 'transition-transform', 'duration-500', 'ease-out');
+                    
+                    // Confetti!
+                    confetti({
+                        particleCount: 150,
+                        spread: 80,
+                        origin: { y: 0.6 },
+                        colors: ['#818cf8', '#6366f1', '#a5b4fc', '#c7d2fe', '#fde047'] // Indigo and soft yellow/gold
+                    });
+                    
+                    // Log answers to console (In a real app, send via Formspree or Fetch API)
+                    console.log("Survey Answers Submitted:", answers);
+                }, 100);
+
+            }, 400);
+        }
+    </script>
+</body>
+</html>
